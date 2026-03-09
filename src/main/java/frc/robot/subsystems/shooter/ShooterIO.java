@@ -26,6 +26,9 @@ public interface ShooterIO {
   /** Set flywheel speed using MotionMagicVelocity (rot/s). */
   public default void setFlywheelVelocity(double velocityRotPerSec) {}
 
+  /** Stop the flywheel (coast, zero voltage). */
+  public default void stopFlywheel() {}
+
   /** Stop all motors. */
   public default void stop() {}
 }

@@ -133,6 +133,11 @@ public class ShooterIOTalonFX implements ShooterIO {
   }
 
   @Override
+  public void stopFlywheel() {
+    flywheelTalon.stopMotor();
+  }
+
+  @Override
   public void stop() {
     hoodTalon.stopMotor();
     flywheelTalon.stopMotor();

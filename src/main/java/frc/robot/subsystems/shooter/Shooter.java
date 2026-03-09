@@ -65,8 +65,10 @@ public class Shooter extends SubsystemBase {
   }
 
   public void stop() {
+    targetHoodPositionRot = ShooterConstants.HOOD_DOWN_POS;
     targetFlywheelVelocity = 0.0;
-    io.stop();
+    io.setHoodPosition(targetHoodPositionRot);
+    io.stopFlywheel();
   }
 
   @AutoLogOutput

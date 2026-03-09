@@ -75,6 +75,13 @@ public class ShooterIOSim implements ShooterIO {
   }
 
   @Override
+  public void stopFlywheel() {
+    flywheelClosedLoop = false;
+    flywheelAppliedVolts = 0.0;
+  }
+
+  // We probably will delete this method as spotFlywheel works better for this
+  @Override
   public void stop() {
     hoodClosedLoop = false;
     flywheelClosedLoop = false;
