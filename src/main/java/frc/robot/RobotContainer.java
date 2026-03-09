@@ -8,6 +8,8 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -17,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.ShootCommands;
@@ -43,6 +46,10 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOSim;
 import frc.robot.subsystems.shooter.ShooterIOTalonFX;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOLimelight;
+import frc.robot.subsystems.vision.VisionIOSim;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -54,6 +61,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
+  private final Vision vision;
   private final Intake intake;
   private final Indexer indexer;
   private final Feeder feeder;
@@ -91,6 +99,21 @@ public class RobotContainer {
                 new ShooterIOTalonFX(
                     ShooterConstants.RIGHT_HOOD_MOTOR_ID, ShooterConstants.RIGHT_FLYWHEEL_MOTOR_ID),
                 "RightShooter");
+        vision =
+            new Vision(
+                new VisionIOLimelight(VisionConstants.FRONT_CAMERA_NAME),
+                new VisionIOLimelight(VisionConstants.BACK_CAMERA_NAME),
+                drive);
+
+        // Publish Limelight MJPEG streams to CameraServer for Elastic Dashboard
+        CameraServer.startAutomaticCapture(
+            new HttpCamera(
+                VisionConstants.FRONT_CAMERA_NAME,
+                "http://" + VisionConstants.FRONT_CAMERA_NAME + ".local:5800/stream.mjpg"));
+        CameraServer.startAutomaticCapture(
+            new HttpCamera(
+                VisionConstants.BACK_CAMERA_NAME,
+                "http://" + VisionConstants.BACK_CAMERA_NAME + ".local:5800/stream.mjpg"));
         break;
 
       case SIM:
@@ -107,6 +130,7 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIOSim());
         leftShooter = new Shooter(new ShooterIOSim(), "LeftShooter");
         rightShooter = new Shooter(new ShooterIOSim(), "RightShooter");
+        vision = new Vision(new VisionIOSim(), new VisionIOSim(), drive);
         break;
 
       default:
@@ -123,6 +147,7 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIO() {});
         leftShooter = new Shooter(new ShooterIO() {}, "LeftShooter");
         rightShooter = new Shooter(new ShooterIO() {}, "RightShooter");
+        vision = new Vision(new VisionIO() {}, new VisionIO() {}, drive);
         break;
     }
 

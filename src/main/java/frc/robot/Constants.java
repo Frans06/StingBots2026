@@ -139,4 +139,28 @@ public final class Constants {
     public static final double HOOD_STATOR_LIMIT = 40.0;
     public static final double FLYWHEEL_STATOR_LIMIT = 80.0;
   }
+
+  public static final class VisionConstants {
+    public static final String FRONT_CAMERA_NAME = "limelight-front";
+    public static final String BACK_CAMERA_NAME = "limelight-back";
+
+    // Camera mounting positions relative to robot center (meters)
+    // TODO: Measure and update these on the real robot
+    public static final double FRONT_CAMERA_FORWARD = 0.3; // meters forward from center
+    public static final double FRONT_CAMERA_SIDE = 0.0; // meters left from center
+    public static final double FRONT_CAMERA_UP = 0.25; // meters up from ground
+
+    public static final double BACK_CAMERA_FORWARD = -0.3; // meters (negative = behind center)
+    public static final double BACK_CAMERA_SIDE = 0.0;
+    public static final double BACK_CAMERA_UP = 0.25;
+
+    // Rejection criteria
+    public static final double MAX_ANGULAR_VELOCITY_RAD_PER_SEC = Math.toRadians(720);
+    public static final double FIELD_LENGTH_METERS = 16.54;
+    public static final double FIELD_WIDTH_METERS = 8.21;
+
+    // Standard deviation tuning
+    public static final double XY_STD_DEV_COEFFICIENT = 0.5;
+    public static final double ROT_STD_DEV = Double.MAX_VALUE; // Trust gyro for rotation with MT2
+  }
 }

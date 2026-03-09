@@ -323,6 +323,11 @@ public class Drive extends SubsystemBase {
     return getPose().getRotation();
   }
 
+  /** Returns the gyro yaw velocity in rad/s (for vision MegaTag2). */
+  public double getGyroYawVelocityRadPerSec() {
+    return gyroInputs.yawVelocityRadPerSec;
+  }
+
   /** Resets the current odometry pose. */
   public void setPose(Pose2d pose) {
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
