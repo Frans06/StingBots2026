@@ -16,7 +16,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.IntakeCommands;
+import frc.robot.commands.ShootCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -24,6 +27,22 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.feeder.Feeder;
+import frc.robot.subsystems.feeder.FeederIO;
+import frc.robot.subsystems.feeder.FeederIOSim;
+import frc.robot.subsystems.feeder.FeederIOTalonFX;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerIO;
+import frc.robot.subsystems.indexer.IndexerIOSim;
+import frc.robot.subsystems.indexer.IndexerIOTalonFX;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOTalonFX;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterIO;
+import frc.robot.subsystems.shooter.ShooterIOSim;
+import frc.robot.subsystems.shooter.ShooterIOTalonFX;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -35,6 +54,11 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
+  private final Intake intake;
+  private final Indexer indexer;
+  private final Feeder feeder;
+  private final Shooter leftShooter;
+  private final Shooter rightShooter;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -47,8 +71,6 @@ public class RobotContainer {
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
-        // ModuleIOTalonFX is intended for modules with TalonFX drive, TalonFX turn, and
-        // a CANcoder
         drive =
             new Drive(
                 new GyroIOPigeon2(),
@@ -56,24 +78,19 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
-
-        // The ModuleIOTalonFXS implementation provides an example implementation for
-        // TalonFXS controller connected to a CANdi with a PWM encoder. The
-        // implementations
-        // of ModuleIOTalonFX, ModuleIOTalonFXS, and ModuleIOSpark (from the Spark
-        // swerve
-        // template) can be freely intermixed to support alternative hardware
-        // arrangements.
-        // Please see the AdvantageKit template documentation for more information:
-        // https://docs.advantagekit.org/getting-started/template-projects/talonfx-swerve-template#custom-module-implementations
-        //
-        // drive =
-        // new Drive(
-        // new GyroIOPigeon2(),
-        // new ModuleIOTalonFXS(TunerConstants.FrontLeft),
-        // new ModuleIOTalonFXS(TunerConstants.FrontRight),
-        // new ModuleIOTalonFXS(TunerConstants.BackLeft),
-        // new ModuleIOTalonFXS(TunerConstants.BackRight));
+        intake = new Intake(new IntakeIOTalonFX());
+        indexer = new Indexer(new IndexerIOTalonFX());
+        feeder = new Feeder(new FeederIOTalonFX());
+        leftShooter =
+            new Shooter(
+                new ShooterIOTalonFX(
+                    ShooterConstants.LEFT_HOOD_MOTOR_ID, ShooterConstants.LEFT_FLYWHEEL_MOTOR_ID),
+                "LeftShooter");
+        rightShooter =
+            new Shooter(
+                new ShooterIOTalonFX(
+                    ShooterConstants.RIGHT_HOOD_MOTOR_ID, ShooterConstants.RIGHT_FLYWHEEL_MOTOR_ID),
+                "RightShooter");
         break;
 
       case SIM:
@@ -85,6 +102,11 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.FrontRight),
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
+        intake = new Intake(new IntakeIOSim());
+        indexer = new Indexer(new IndexerIOSim());
+        feeder = new Feeder(new FeederIOSim());
+        leftShooter = new Shooter(new ShooterIOSim(), "LeftShooter");
+        rightShooter = new Shooter(new ShooterIOSim(), "RightShooter");
         break;
 
       default:
@@ -96,6 +118,11 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
+        intake = new Intake(new IntakeIO() {});
+        indexer = new Indexer(new IndexerIO() {});
+        feeder = new Feeder(new FeederIO() {});
+        leftShooter = new Shooter(new ShooterIO() {}, "LeftShooter");
+        rightShooter = new Shooter(new ShooterIO() {}, "RightShooter");
         break;
     }
 
@@ -150,7 +177,7 @@ public class RobotContainer {
     // Switch to X pattern when X button is pressed
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-    // Reset gyro to 0° when B button is pressed
+    // Reset gyro to 0° when B button is pressed
     controller
         .b()
         .onTrue(
@@ -160,6 +187,21 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
                     drive)
                 .ignoringDisable(true));
+
+    // Intake: left bumper to extend + rollers, release to retract
+    controller.leftBumper().whileTrue(IntakeCommands.intakeGamePiece(intake));
+
+    // Shoot left: left trigger activates full chain (intake + indexer LEFT_ONLY + feeder + left
+    // shooter)
+    controller
+        .leftTrigger(0.5)
+        .whileTrue(ShootCommands.shootLeft(leftShooter, feeder, indexer, intake));
+
+    // Shoot right: right trigger activates full chain (intake + indexer RIGHT_ONLY + feeder + right
+    // shooter)
+    controller
+        .rightTrigger(0.5)
+        .whileTrue(ShootCommands.shootRight(rightShooter, feeder, indexer, intake));
   }
 
   /**
