@@ -45,7 +45,7 @@ public class IntakeIOTalonFX implements IntakeIO {
     // Configure extension motor
     var extensionConfig = new TalonFXConfiguration();
     extensionConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    extensionConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    extensionConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     extensionConfig.Slot0.kP = IntakeConstants.EXTENSION_KP;
     extensionConfig.Slot0.kI = IntakeConstants.EXTENSION_KI;
     extensionConfig.Slot0.kD = IntakeConstants.EXTENSION_KD;
