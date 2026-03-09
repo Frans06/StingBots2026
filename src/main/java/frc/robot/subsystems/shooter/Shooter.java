@@ -27,9 +27,18 @@ public class Shooter extends SubsystemBase {
   }
 
   @Override
+  public String getName() {
+    return name;
+  }
+
+  @Override
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs(name, inputs);
+
+    // Log target setpoints for PID tuning (not part of IO inputs)
+    Logger.recordOutput(name + "/TargetHoodPositionRot", targetHoodPositionRot);
+    Logger.recordOutput(name + "/TargetFlywheelVelocity", targetFlywheelVelocity);
 
     if (DriverStation.isDisabled()) {
       io.stop();
@@ -84,9 +93,5 @@ public class Shooter extends SubsystemBase {
 
   public double getHoodPosition() {
     return inputs.hoodPositionRot;
-  }
-
-  public String getName() {
-    return name;
   }
 }

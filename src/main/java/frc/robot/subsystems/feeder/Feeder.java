@@ -49,7 +49,6 @@ public class Feeder extends SubsystemBase {
     return running;
   }
 
-  @AutoLogOutput(key = "Feeder/KickerVelocity")
   public double getKickerVelocity() {
     return inputs.kickerVelocityRotPerSec;
   }

@@ -62,12 +62,10 @@ public class Intake extends SubsystemBase {
         < IntakeConstants.EXTENSION_POSITION_TOLERANCE;
   }
 
-  @AutoLogOutput(key = "Intake/ExtensionPositionRot")
   public double getExtensionPosition() {
     return inputs.extensionPositionRot;
   }
 
-  @AutoLogOutput(key = "Intake/RollerVelocityRotPerSec")
   public double getRollerVelocity() {
     return inputs.rollerVelocityRotPerSec;
   }
